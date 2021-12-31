@@ -1,8 +1,14 @@
 const express = require('express')
+const { addListener } = require('nodemon')
 const app = express()
 app.listen(3000)
 //step 2
+//--for all routes
 // app.get(/\//, (req, res) => {
+//   res.send('Ok')
+// })
+//--for just the root route
+// app.get("/", (req, res) => {
 //   res.send('Ok')
 // })
 
@@ -61,4 +67,10 @@ app.get("/movies/read/by-title", (req, res) => {
     res.send({
         status: 200, data: [...movies].sort((a, b) => (a.title).localeCompare(b.title))
     })
+});
+
+app.get(["/movies/read/id/","/movies/read/id/:id"], (req, res) => {
+    let id = Number(req.params.id)
+    if(id>=0 && id<movies.length) res.send({status:200, data:movies[id]});
+    res.status(404).send({status:404, error:true, message:`the movie '${req.params.id || 'Unknown'}' does not exist`});
 });
