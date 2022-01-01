@@ -91,3 +91,19 @@ app.get("/movies/delete/:id", (req, res) => {
         res.send({status:200, data:movies});
     }else res.status(404).send({status:404, error:true, message:`the movie '${req.params.id}' does not exist`});
 });
+
+app.get("/movies/update/:id", (req, res) => {
+    let id = Number(req.params.id)
+    //check if the id exist 
+    if(id>=0 && id<movies.length){
+
+        //check if title provided
+        if(req.query.title) movies[id].title=req.query.title
+        //check if rating provdided and is number
+        if(req.query.rating && Number(req.query.rating)>=0 && Number(req.query.rating)<10) movies[id].rating = Number(req.query.rating)
+        //check if year  providded and 4 digits
+        if(req.query.year && (/^[1-9]\d{3}$/).test(req.query.year)) movies[id].year = req.query.year
+        res.send({status:200, data:movies})
+
+    }else res.status(404).send({status:404, error:true, message:`the movie '${req.params.id}' does not exist`});
+});
