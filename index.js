@@ -42,7 +42,6 @@ app.get("/movies/create", (req, res) => {
     res.send("create a movie")
 })
 app.get("/movies/read", (req, res) => {
-    console.log(movies);
     res.send({ status: 200, data: movies })
 })
 app.get("/movies/update", (req, res) => {
@@ -83,4 +82,12 @@ app.get("/movies/add",(req, res) => {
     //if rating is not a number or missing push 4 instead
     res.send({ status: 200, data: movies })
     }else res.status(403).send({status:403, error:true, message:'you cannot create a movie without providing a title and a year'});
+});
+
+app.get("/movies/delete/:id", (req, res) => {
+    let id = Number(req.params.id)
+    if(id>=0 && id<movies.length){
+        movies.splice(id,1);
+        res.send({status:200, data:movies});
+    }else res.status(404).send({status:404, error:true, message:`the movie '${req.params.id}' does not exist`});
 });
