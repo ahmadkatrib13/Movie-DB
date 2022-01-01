@@ -72,5 +72,15 @@ app.get("/movies/read/by-title", (req, res) => {
 app.get(["/movies/read/id/","/movies/read/id/:id"], (req, res) => {
     let id = Number(req.params.id)
     if(id>=0 && id<movies.length) res.send({status:200, data:movies[id]});
-    res.status(404).send({status:404, error:true, message:`the movie '${req.params.id || 'Unknown'}' does not exist`});
+    else res.status(404).send({status:404, error:true, message:`the movie '${req.params.id || 'Unknown'}' does not exist`});
+});
+
+app.get("/movies/add",(req, res) => {
+    //?title=<TITLE>&year=<YEAR>&rating=<RATING>
+    if(req.query.title && req.query.year && (/^[1-9]\d{3}$/).test(req.query.year)){
+    // title not missing  //year not missing //4 digits and a number
+    movies.push({title: req.query.title, year: req.query.year, rating: (req.query.rating && Number(req.query.rating)<=10 && Number(req.query.rating)>0)?Number(req.query.rating):4})
+    //if rating is not a number or missing push 4 instead
+    res.send({ status: 200, data: movies })
+    }else res.status(403).send({status:403, error:true, message:'you cannot create a movie without providing a title and a year'});
 });
