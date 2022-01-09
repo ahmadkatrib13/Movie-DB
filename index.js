@@ -33,6 +33,68 @@ const schemaMovies = new mongoose.Schema({
 }, { versionKey: false });
 
 const movies = mongoose.model('movies', schemaMovies);
+const usersArray = [{ username: "admin", password: "admin" }, { username: "ahmad", password: "p@ssword" }]
+
+
+const checkAuth = (username,password)=>{
+   let acceptPass = false;
+   let acceptUsername = false;
+   if(!username) return -1//not authorized if username missed
+    for(let i=0;i<usersArray.length-1;i++){
+        if(username == usersArray[i].username)
+            if(password== usersArray[i].password) acceptPass = true
+            acceptUsername=true
+            break
+    }
+    if(acceptPass&&acceptUsername) return 0;//acceptable username and pass
+    if(acceptUsername) return 1;//acceptable username but wrong pass
+    return -1;//wrong username and password
+}
+
+app.get("/users", (req, res) => {
+    res.send({
+        status: 200, users: usersArray
+        
+    })
+})
+app.get("/users/read/id/:id",(req,res)=>{
+    let id = req.params.id.trim()
+    if(usersArray[id]) res.send({ status: 200, users: usersArray[id] })
+    else{ 
+        res.status(404).send({ status: 404, error: true, message:`the user ${id || 'Unknown'} does not exist` })
+}
+})
+
+app.post("/users/add",(req, res) => {
+      let usernames = usersArray.map(user => user.username)
+    if(req.query.username && !(usernames.includes(req.query.username))) {
+        if ((/^\S{8,}$/).test(req.query.password)) {
+            usersArray.push({username:req.query.username,password:req.query.password})
+            res.send({ status: 200, users: usersArray })
+        } else res.status(404).send("error, passowrd should be at least of size 8")
+    }else res.status(404).send("error, username may be already exist or undifined")
+})
+
+app.delete("/users/delete/:id",(req,res)=>{
+    let id = req.params.id.trim()
+    if(usersArray[id]){
+        usersArray.splice(id, 1);
+        res.send({ status: 200, users: usersArray})
+    }else{
+        res.status(404).send(`error, user <${id || "unkown"}> does not exist or undifined`)
+    }
+})
+
+app.put("/users/update/:id",(req,res)=>{
+    let id = req.params.id.trim()
+    if(usersArray[id]){
+        if (req.query.username) usersArray[id].username = req.query.username
+        if (req.query.password && (/^\S{8,}$/).test(req.query.password)) usersArray[id].password = req.query.password
+        res.send({ status: 200, users: usersArray })
+    }else{
+        res.status(404).send(`error, user <${id || "Unkown"}> does not exist or undifined`)
+        }})
+
 
         
 //step 2
@@ -136,7 +198,10 @@ app.get("/movies/read/id/:id", (req, res) => {
 });
 //step 8
 app.post("/movies/add", (req, res) => {
-    
+    let authorized =checkAuth(req.query.username,req.query.password)
+    if(authorized == -1) res.status(500).send({status:500,error:true,message:'you cannot create movie without providing exist username and password'})
+    else if(authorized == 1) res.status(500).send({status:500,error:true,message:'wrong password , unauthorized operation'})
+    else
     if (req.query.title && req.query.year && (/^[1-9]\d{3}$/).test(req.query.year)) {
         // title not missing  //year not missing //4 digits and a number
         movies.create({
@@ -158,7 +223,10 @@ app.post("/movies/add", (req, res) => {
 });
 //step 9
 app.delete("/movies/delete/:id", (req, res) => {
-    
+    let authorized =checkAuth(req.query.username,req.query.password)
+    if(authorized == -1) res.status(500).send({status:500,error:true,message:'you cannot create movie without providing exist username and password'})
+    else if(authorized == 1) res.status(500).send({status:500,error:true,message:'wrong password , unauthorized operation'})
+    else
     movies.findByIdAndDelete(req.params.id).then(deletedMovie => {
         movies.find().then(moviesData => {
             res.send({ status: 200, data: moviesData });
@@ -171,7 +239,10 @@ app.delete("/movies/delete/:id", (req, res) => {
 });
 //step 10
 app.put("/movies/update/:id", (req, res) => {
-    
+    let authorized =checkAuth(req.query.username,req.query.password)
+    if(authorized == -1) res.status(500).send({status:500,error:true,message:'you cannot create movie without providing exist username and password'})
+    else if(authorized == 1) res.status(500).send({status:500,error:true,message:'wrong password , unauthorized operation'})
+    else
     movies.findById(req.params.id).then(async (doc, err) => {
 
         //check if title provided
