@@ -1,7 +1,7 @@
 const express = require('express')
 const app = express()
 const mongoose = require('mongoose');
-app.listen(4000)
+app.listen(3000)
 app.use(express.json());
 
 const uri = "mongodb+srv://admin:admin@cluster0.7go78.mongodb.net/movie-db?retryWrites=true&w=majority"
